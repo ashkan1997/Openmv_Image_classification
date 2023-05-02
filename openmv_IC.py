@@ -51,7 +51,7 @@ while(True):
         # Preprocess the ROI for classification
         # (resize, convert to grayscale, normalize pixel values, etc.)
         roi = roi.to_grayscale()
-        roi = roi.resize((64, 64))
+        roi = roi.resize((96, 96))
         roi = roi.stretch_histogram()
         roi = roi.invert()
         roi = roi.normalise()
