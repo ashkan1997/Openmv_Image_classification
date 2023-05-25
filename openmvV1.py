@@ -1,8 +1,8 @@
 import sensor, image, pyb, os, time, tf, uos, gc
 
-TRIGGER_THRESHOLD = 5
+TRIGGER_THRESHOLD = 2
 BG_UPDATE_FRAMES = 50
-BG_UPDATE_BLEND = 128
+BG_UPDATE_BLEND = 64
 
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
@@ -13,6 +13,11 @@ clock = time.clock()
 
 extra_fb = sensor.alloc_extra_fb(sensor.width(), sensor.height(), sensor.RGB565)
 
+print("About to save background image...")
+sensor.skip_frames(time = 2000) # Give the user time to get ready.
+extra_fb.replace(sensor.snapshot())
+print("Saved background image - Now frame differencing!")
+
 net = None
 labels = None
 
@@ -20,13 +25,13 @@ try:
     net = tf.load("model.tflite", load_to_fb=uos.stat('model.tflite')[6] > (gc.mem_free() - (32*1024)))
 except Exception as e:
     print(e)
-    raise Exception('Failed to load "model.tflite", did you copy the .tflite and labels.txt file onto the mass-storage device? (' + str(e) + ')')
+    raise Exception('Failed to load "model.tflite" (' + str(e) + ')')
 
 try:
     labels = [line.rstrip('\n') for line in open("labels.txt")]
 except Exception as e:
-    raise Exception('Failed to load "labels.txt", did you copy the .tflite and labels.txt file onto the mass-storage device? (' + str(e) + ')')
-
+    raise Exception('Failed to load "labels.txt" (' + str(e) + ')')
+triggered = False
 frame_count = 0
 
 while True:
@@ -47,7 +52,7 @@ while True:
 
     if triggered:
         for obj in net.classify(img, min_scale=1.0, scale_mul=0.8, x_overlap=0.5, y_overlap=0.5):
-            print("**********\nPredictions at [x=%d,y=%d,w=%d,h=%d]" % obj.rect())
+            print("**********\nPredictions")
             img.draw_rectangle(obj.rect())
             predictions_list = list(zip(labels, obj.output()))
 
