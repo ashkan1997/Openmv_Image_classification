@@ -1,8 +1,8 @@
 import sensor, image, pyb, os, time, tf, uos, gc
 
 TRIGGER_THRESHOLD = 5
-BG_UPDATE_FRAMES = 25
-BG_UPDATE_BLEND = 64
+BG_UPDATE_FRAMES = 50
+BG_UPDATE_BLEND = 128
 
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
